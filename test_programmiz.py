@@ -4,36 +4,14 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.chrome.options import Options
-import tempfile
-import os
 import time
-import shutil
 
 @pytest.fixture
 def driver():
-    # Create a unique temporary directory for the user data (fresh profile)
-    user_data_dir = tempfile.mkdtemp()
-
-    # Set Chrome options to specify the unique user data dir
-    chrome_options = Options()
-    chrome_options.add_argument(f"user-data-dir={user_data_dir}")  # Unique user data dir
-    chrome_options.add_argument("--no-sandbox")  # Disable sandbox if necessary for Jenkins/CI
-    chrome_options.add_argument("--disable-dev-shm-usage")  # Another fix for CI environments
-
-    # Setup ChromeDriver with the specified options
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+    driver = webdriver.Chrome()
     driver.maximize_window()
-
     yield driver
-
     driver.quit()
-
-    # Clean up the temporary directory after test completes (important step)
-    try:
-        shutil.rmtree(user_data_dir)
-    except OSError as e:
-        print(f"Error cleaning up temp directory: {e}")
 
 def test_homepage_title(driver):
     driver.get("https://www.programiz.com/python-programming")
