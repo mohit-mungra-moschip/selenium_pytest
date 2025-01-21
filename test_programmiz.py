@@ -4,14 +4,33 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.options import Options
 import time
+import tempfile
+import os
 
 @pytest.fixture
 def driver():
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+    # Create a unique temporary directory for the user data
+    user_data_dir = tempfile.mkdtemp()
+
+    # Set Chrome options to specify the unique user data dir
+    chrome_options = Options()
+    chrome_options.add_argument(f"user-data-dir={user_data_dir}")  # Unique user data dir
+
+    # Set up ChromeDriver with the specified options
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
     driver.maximize_window()
+    
     yield driver
+    
     driver.quit()
+    
+    # Clean up the temporary directory (optional)
+    try:
+        os.rmdir(user_data_dir)
+    except OSError:
+        pass
 
 def test_homepage_title(driver):
     driver.get("https://www.programiz.com/python-programming")
@@ -39,3 +58,4 @@ def test_footer_about_us_link(driver):
     footer_about_us.click()
     time.sleep(2)
     assert "https://www.programiz.com/about" in driver.current_url, "'About Us' link is broken"
+
