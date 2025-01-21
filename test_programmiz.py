@@ -8,7 +8,11 @@ import time
 
 @pytest.fixture
 def driver():
-    driver = webdriver.Chrome()
+    options = webdriver.ChromeOptions()
+    options.add_argument("--headless")  # Run in headless mode
+    options.add_argument("--no-sandbox")  # For server environments
+    options.add_argument("--disable-dev-shm-usage")  # For Docker or limited memory
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     driver.maximize_window()
     yield driver
     driver.quit()
